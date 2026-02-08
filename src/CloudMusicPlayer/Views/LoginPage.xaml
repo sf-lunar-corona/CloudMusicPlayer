@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:CloudMusicPlayer.ViewModels"
+             x:Class="CloudMusicPlayer.Views.LoginPage"
+             x:DataType="vm:LoginViewModel"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Black}}">
+
+    <Grid RowDefinitions="*,Auto,Auto,*" Padding="40">
+        <!-- App Icon / Title -->
+        <VerticalStackLayout Grid.Row="0" VerticalOptions="End" Spacing="10">
+            <Label Text="🎵"
+                   FontSize="72"
+                   HorizontalOptions="Center" />
+            <Label Text="Cloud Music Player"
+                   FontSize="28"
+                   FontAttributes="Bold"
+                   HorizontalTextAlignment="Center"
+                   TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource White}}" />
+        </VerticalStackLayout>
+
+        <!-- Status message -->
+        <Label Grid.Row="1"
+               Text="{Binding StatusMessage}"
+               FontSize="14"
+               HorizontalTextAlignment="Center"
+               Margin="0,30,0,30"
+               TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" />
+
+        <!-- Sign in button -->
+        <VerticalStackLayout Grid.Row="2" Spacing="15">
+            <Button Text="Sign in with Google"
+                    Command="{Binding SignInCommand}"
+                    IsEnabled="{Binding IsSigningIn, Converter={StaticResource InverseBoolConverter}}"
+                    BackgroundColor="{StaticResource Primary}"
+                    TextColor="White"
+                    FontSize="16"
+                    HeightRequest="50"
+                    CornerRadius="25"
+                    HorizontalOptions="Fill" />
+
+            <ActivityIndicator IsRunning="{Binding IsSigningIn}"
+                               IsVisible="{Binding IsSigningIn}"
+                               Color="{StaticResource Primary}"
+                               HorizontalOptions="Center" />
+        </VerticalStackLayout>
+
+        <!-- Version info -->
+        <Label Grid.Row="3"
+               Text="v1.0.0"
+               FontSize="12"
+               TextColor="Gray"
+               VerticalOptions="End"
+               HorizontalTextAlignment="Center" />
+    </Grid>
+</ContentPage>

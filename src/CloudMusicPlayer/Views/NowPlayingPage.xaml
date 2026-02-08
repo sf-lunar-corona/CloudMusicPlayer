@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:CloudMusicPlayer.ViewModels"
+             x:Class="CloudMusicPlayer.Views.NowPlayingPage"
+             x:DataType="vm:NowPlayingViewModel"
+             x:Name="thisPage"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark=#1A1A2E}">
+
+    <Grid RowDefinitions="Auto,*,Auto,Auto,Auto,Auto" Padding="25">
+
+        <!-- Top Bar -->
+        <Grid Grid.Row="0" ColumnDefinitions="40,*,40" Margin="0,10,0,0">
+            <ImageButton Source="back.png"
+                         Command="{Binding Source={x:Reference thisPage}, Path=BackCommand}"
+                         WidthRequest="24" HeightRequest="24"
+                         VerticalOptions="Center" />
+            <VerticalStackLayout Grid.Column="1" HorizontalOptions="Center">
+                <Label Text="NOW PLAYING"
+                       FontSize="11"
+                       TextColor="Gray"
+                       HorizontalTextAlignment="Center"
+                       CharacterSpacing="2" />
+                <Label Text="{Binding CurrentQueuePosition, StringFormat='{0}'}"
+                       FontSize="11"
+                       TextColor="Gray"
+                       HorizontalTextAlignment="Center">
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="{Binding CurrentQueuePosition}" />
+                            <Span Text=" / " />
+                            <Span Text="{Binding QueueCount}" />
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
+            </VerticalStackLayout>
+            <ImageButton Grid.Column="2"
+                         Source="menu.png"
+                         WidthRequest="24" HeightRequest="24"
+                         VerticalOptions="Center" />
+        </Grid>
+
+        <!-- Album Art -->
+        <Frame Grid.Row="1"
+               CornerRadius="15"
+               Padding="0"
+               IsClippedToBounds="True"
+               HasShadow="True"
+               HorizontalOptions="Center"
+               VerticalOptions="Center"
+               WidthRequest="300"
+               HeightRequest="300"
+               BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#2D2D44}">
+            <Grid>
+                <Image Source="{Binding AlbumArtSource}"
+                       Aspect="AspectFill"
+                       IsVisible="{Binding AlbumArtSource, Converter={StaticResource IsNotNullConverter}}" />
+                <Label Text="🎵"
+                       FontSize="80"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center" />
+                <!-- Loading overlay -->
+                <Grid BackgroundColor="{AppThemeBinding Light=#80FFFFFF, Dark=#80000000}"
+                      IsVisible="{Binding IsLoading}">
+                    <ActivityIndicator IsRunning="{Binding IsLoading}"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Center"
+                                       Color="{StaticResource Primary}"
+                                       WidthRequest="50"
+                                       HeightRequest="50" />
+                    <Label Text="Downloading..."
+                           FontSize="14"
+                           TextColor="{AppThemeBinding Light=Black, Dark=White}"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"
+                           Margin="0,60,0,0" />
+                </Grid>
+            </Grid>
+        </Frame>
+
+        <!-- Track Info -->
+        <VerticalStackLayout Grid.Row="2" Spacing="5" Margin="0,20,0,10">
+            <Grid ColumnDefinitions="*,Auto">
+                <VerticalStackLayout Grid.Column="0" Spacing="3">
+                    <Label Text="{Binding CurrentTrack.Title, FallbackValue='No Track'}"
+                           FontSize="22"
+                           FontAttributes="Bold"
+                           LineBreakMode="TailTruncation" />
+                    <Label Text="{Binding CurrentTrack.Artist, FallbackValue='Unknown Artist'}"
+                           FontSize="15"
+                           TextColor="Gray"
+                           LineBreakMode="TailTruncation" />
+                    <Label Text="{Binding CurrentTrack.Album, FallbackValue=''}"
+                           FontSize="13"
+                           TextColor="Gray"
+                           LineBreakMode="TailTruncation" />
+                </VerticalStackLayout>
+                <ImageButton Grid.Column="1"
+                             Command="{Binding ToggleFavoriteCommand}"
+                             WidthRequest="30"
+                             HeightRequest="30"
+                             VerticalOptions="Start">
+                    <ImageButton.Source>
+                        <FontImageSource Glyph="{Binding IsFavorite, Converter={StaticResource FavoriteIconConverter}}"
+                                         FontFamily="Default"
+                                         Size="24"
+                                         Color="{Binding IsFavorite, Converter={StaticResource FavoriteColorConverter}}" />
+                    </ImageButton.Source>
+                </ImageButton>
+            </Grid>
+        </VerticalStackLayout>
+
+        <!-- Progress Bar -->
+        <Grid Grid.Row="3" RowDefinitions="Auto,Auto" Margin="0,0,0,10">
+            <Slider Grid.Row="0"
+                    Value="{Binding Progress}"
+                    Minimum="0"
+                    Maximum="1"
+                    MinimumTrackColor="{StaticResource Primary}"
+                    MaximumTrackColor="{AppThemeBinding Light=#E0E0E0, Dark=#444}"
+                    ThumbColor="{StaticResource Primary}" />
+            <Grid Grid.Row="1" ColumnDefinitions="*,*">
+                <Label Grid.Column="0"
+                       Text="{Binding PositionText}"
+                       FontSize="12"
+                       TextColor="Gray" />
+                <Label Grid.Column="1"
+                       Text="{Binding DurationText}"
+                       FontSize="12"
+                       TextColor="Gray"
+                       HorizontalTextAlignment="End" />
+            </Grid>
+        </Grid>
+
+        <!-- Playback Controls -->
+        <Grid Grid.Row="4" ColumnDefinitions="*,*,*,*,*" Margin="0,5,0,15">
+            <!-- Shuffle -->
+            <ImageButton Grid.Column="0"
+                         Command="{Binding ToggleShuffleCommand}"
+                         WidthRequest="30" HeightRequest="30"
+                         HorizontalOptions="Center"
+                         Opacity="{Binding IsShuffleEnabled, Converter={StaticResource BoolToOpacityConverter}}">
+                <ImageButton.Source>
+                    <FontImageSource Glyph="🔀" FontFamily="Default" Size="20"
+                                     Color="{Binding IsShuffleEnabled, Converter={StaticResource ShuffleColorConverter}}" />
+                </ImageButton.Source>
+            </ImageButton>
+
+            <!-- Previous -->
+            <ImageButton Grid.Column="1"
+                         Command="{Binding PreviousCommand}"
+                         WidthRequest="40" HeightRequest="40"
+                         HorizontalOptions="Center">
+                <ImageButton.Source>
+                    <FontImageSource Glyph="⏮" FontFamily="Default" Size="28"
+                                     Color="{AppThemeBinding Light=Black, Dark=White}" />
+                </ImageButton.Source>
+            </ImageButton>
+
+            <!-- Play/Pause -->
+            <Button Grid.Column="2"
+                    Command="{Binding PlayPauseCommand}"
+                    WidthRequest="65"
+                    HeightRequest="65"
+                    CornerRadius="33"
+                    BackgroundColor="{StaticResource Primary}"
+                    TextColor="White"
+                    FontSize="28"
+                    Text="{Binding IsPlaying, Converter={StaticResource PlayPauseConverter}}"
+                    HorizontalOptions="Center" />
+
+            <!-- Next -->
+            <ImageButton Grid.Column="3"
+                         Command="{Binding NextCommand}"
+                         WidthRequest="40" HeightRequest="40"
+                         HorizontalOptions="Center">
+                <ImageButton.Source>
+                    <FontImageSource Glyph="⏭" FontFamily="Default" Size="28"
+                                     Color="{AppThemeBinding Light=Black, Dark=White}" />
+                </ImageButton.Source>
+            </ImageButton>
+
+            <!-- Repeat -->
+            <ImageButton Grid.Column="4"
+                         Command="{Binding CycleRepeatModeCommand}"
+                         WidthRequest="30" HeightRequest="30"
+                         HorizontalOptions="Center">
+                <ImageButton.Source>
+                    <FontImageSource Glyph="{Binding RepeatModeIcon}" FontFamily="Default" Size="20"
+                                     Color="{AppThemeBinding Light=Gray, Dark=LightGray}" />
+                </ImageButton.Source>
+            </ImageButton>
+        </Grid>
+
+        <!-- Volume -->
+        <Grid Grid.Row="5" ColumnDefinitions="30,*,30" Margin="0,0,0,10">
+            <Label Grid.Column="0" Text="🔈" FontSize="16" VerticalOptions="Center" />
+            <Slider Grid.Column="1"
+                    Value="{Binding Volume}"
+                    Minimum="0"
+                    Maximum="1"
+                    MinimumTrackColor="{StaticResource Primary}"
+                    MaximumTrackColor="{AppThemeBinding Light=#E0E0E0, Dark=#444}" />
+            <Label Grid.Column="2" Text="🔊" FontSize="16" VerticalOptions="Center" />
+        </Grid>
+    </Grid>
+</ContentPage>

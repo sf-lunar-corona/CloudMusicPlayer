@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:CloudMusicPlayer.ViewModels"
+             xmlns:models="clr-namespace:CloudMusicPlayer.Models"
+             x:Class="CloudMusicPlayer.Views.FolderBrowserPage"
+             x:DataType="vm:FolderBrowserViewModel"
+             Title="{Binding Title}">
+
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
+        <!-- Breadcrumb Navigation -->
+        <ScrollView Grid.Row="0" Orientation="Horizontal" Padding="15,10">
+            <HorizontalStackLayout Spacing="5" BindableLayout.ItemsSource="{Binding Breadcrumbs}">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="vm:BreadcrumbItem">
+                        <HorizontalStackLayout Spacing="5">
+                            <Label Text="›" TextColor="Gray" VerticalOptions="Center" FontSize="16" />
+                            <Label Text="{Binding Name}"
+                                   TextColor="{StaticResource Primary}"
+                                   FontSize="14"
+                                   VerticalOptions="Center">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:FolderBrowserViewModel}}, Path=NavigateToBreadcrumbCommand}"
+                                        CommandParameter="{Binding .}" />
+                                </Label.GestureRecognizers>
+                            </Label>
+                        </HorizontalStackLayout>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </HorizontalStackLayout>
+        </ScrollView>
+
+        <!-- Loading -->
+        <ActivityIndicator Grid.Row="1" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"
+                           Color="{StaticResource Primary}" Margin="0,10" />
+
+        <!-- File/Folder List -->
+        <CollectionView Grid.Row="2"
+                         ItemsSource="{Binding Items}"
+                         SelectionMode="None">
+            <CollectionView.EmptyView>
+                <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Padding="40">
+                    <Label Text="📂" FontSize="48" HorizontalOptions="Center" />
+                    <Label Text="{Binding EmptyMessage}"
+                           HorizontalTextAlignment="Center"
+                           TextColor="Gray"
+                           FontSize="14" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:DriveFileItem">
+                    <Grid Padding="15,10" ColumnDefinitions="40,*,Auto">
+                        <Label Grid.Column="0"
+                               Text="{Binding Icon}"
+                               FontSize="24"
+                               VerticalOptions="Center" />
+                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                            <Label Text="{Binding Name}"
+                                   FontSize="15"
+                                   LineBreakMode="TailTruncation" />
+                            <Label Text="{Binding DisplaySize}"
+                                   FontSize="12"
+                                   TextColor="Gray"
+                                   IsVisible="{Binding IsFolder, Converter={StaticResource InverseBoolConverter}}" />
+                        </VerticalStackLayout>
+                        <Label Grid.Column="2"
+                               Text="›"
+                               FontSize="20"
+                               TextColor="Gray"
+                               VerticalOptions="Center"
+                               IsVisible="{Binding IsFolder}" />
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:FolderBrowserViewModel}}, Path=NavigateToItemCommand}"
+                                CommandParameter="{Binding .}" />
+                        </Grid.GestureRecognizers>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- Select Folder Button (only in browse mode) -->
+        <Button Grid.Row="3"
+                Text="Add this folder to Library"
+                Command="{Binding SelectFolderCommand}"
+                BackgroundColor="{StaticResource Primary}"
+                TextColor="White"
+                Margin="15"
+                HeightRequest="50"
+                CornerRadius="25"
+                IsVisible="{Binding IsBrowseMode}" />
+    </Grid>
+</ContentPage>

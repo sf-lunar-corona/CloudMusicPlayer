@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:CloudMusicPlayer.ViewModels"
+             xmlns:models="clr-namespace:CloudMusicPlayer.Models"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             x:Class="CloudMusicPlayer.Views.LibraryPage"
+             x:DataType="vm:LibraryViewModel"
+             Title="{Binding Title}">
+
+    <Shell.TitleView>
+        <Grid ColumnDefinitions="*,Auto" Padding="0,0,10,0">
+            <Label Grid.Column="0"
+                   Text="Library"
+                   FontSize="20"
+                   FontAttributes="Bold"
+                   VerticalOptions="Center" />
+            <Label Grid.Column="1"
+                   Text="{Binding FolderCount, StringFormat='{0} folders'}"
+                   FontSize="13"
+                   TextColor="Gray"
+                   VerticalOptions="Center" />
+        </Grid>
+    </Shell.TitleView>
+
+    <Grid RowDefinitions="*">
+        <!-- Folder List -->
+        <RefreshView Grid.Row="0"
+                     IsRefreshing="{Binding IsBusy}"
+                     Command="{Binding LoadFoldersCommand}">
+            <CollectionView ItemsSource="{Binding Folders}"
+                             SelectionMode="None">
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Padding="40" Spacing="15">
+                        <Label Text="📂" FontSize="64" HorizontalOptions="Center" />
+                        <Label Text="{Binding EmptyMessage}"
+                               HorizontalTextAlignment="Center"
+                               TextColor="Gray"
+                               FontSize="15" />
+                        <Button Text="Browse Google Drive"
+                                Command="{Binding BrowseDriveCommand}"
+                                BackgroundColor="{StaticResource Primary}"
+                                TextColor="White"
+                                CornerRadius="20"
+                                HorizontalOptions="Center" />
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:SavedFolder">
+                        <SwipeView>
+                            <SwipeView.RightItems>
+                                <SwipeItems>
+                                    <SwipeItem Text="Remove"
+                                               BackgroundColor="#FF6B6B"
+                                               Command="{Binding Source={RelativeSource AncestorType={x:Type vm:LibraryViewModel}}, Path=RemoveFolderCommand}"
+                                               CommandParameter="{Binding .}" />
+                                </SwipeItems>
+                            </SwipeView.RightItems>
+                            <Grid Padding="15,12" ColumnDefinitions="50,*,Auto"
+                                  BackgroundColor="Transparent">
+                                <!-- Folder Icon -->
+                                <Frame Grid.Column="0"
+                                       WidthRequest="44" HeightRequest="44"
+                                       CornerRadius="10"
+                                       Padding="0"
+                                       IsClippedToBounds="True"
+                                       BackgroundColor="{AppThemeBinding Light=#E8F0FE, Dark=#2D3548}">
+                                    <Label Text="📁"
+                                           FontSize="22"
+                                           HorizontalOptions="Center"
+                                           VerticalOptions="Center" />
+                                </Frame>
+
+                                <!-- Folder Info -->
+                                <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="3" Padding="12,0,0,0">
+                                    <Label Text="{Binding Name}"
+                                           FontSize="16"
+                                           FontAttributes="Bold"
+                                           LineBreakMode="TailTruncation" />
+                                    <Label Text="{Binding TrackCount, StringFormat='{0} tracks'}"
+                                           FontSize="12"
+                                           TextColor="Gray" />
+                                </VerticalStackLayout>
+
+                                <!-- Arrow -->
+                                <Label Grid.Column="2"
+                                       Text="›"
+                                       FontSize="22"
+                                       TextColor="Gray"
+                                       VerticalOptions="Center"
+                                       Margin="0,0,5,0" />
+
+                                <Grid.GestureRecognizers>
+                                    <TapGestureRecognizer
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:LibraryViewModel}}, Path=OpenFolderCommand}"
+                                        CommandParameter="{Binding .}" />
+                                </Grid.GestureRecognizers>
+                            </Grid>
+                        </SwipeView>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+
+        <!-- Add Folder FAB -->
+        <Button Grid.Row="0"
+                Text="+"
+                Command="{Binding BrowseDriveCommand}"
+                FontSize="28"
+                WidthRequest="56"
+                HeightRequest="56"
+                CornerRadius="28"
+                BackgroundColor="{StaticResource Primary}"
+                TextColor="White"
+                HorizontalOptions="End"
+                VerticalOptions="End"
+                Margin="0,0,20,20"
+                Shadow="{OnPlatform Default={Shadow Brush=Black, Offset='2,4', Radius=8, Opacity=0.3}}" />
+
+        <!-- Hidden MediaElement for audio playback (must be in visual tree) -->
+        <toolkit:MediaElement x:Name="GlobalMediaElement"
+                              Grid.Row="0"
+                              Opacity="0"
+                              HeightRequest="0"
+                              WidthRequest="0"
+                              InputTransparent="True"
+                              ShouldAutoPlay="False" />
+    </Grid>
+</ContentPage>

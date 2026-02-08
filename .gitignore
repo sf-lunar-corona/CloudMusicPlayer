@@ -1,0 +1,29 @@
+## .NET / MAUI
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+
+## Build artifacts
+*.apk
+*.aab
+*.ipa
+
+## Keystore (keep secure, do not commit)
+*.keystore
+*.jks
+
+## IDE
+.idea/
+*.swp
+*~
+
+## OS
+.DS_Store
+Thumbs.db
+
+## Claude
+.claude/

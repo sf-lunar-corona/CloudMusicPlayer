@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="CloudMusicPlayer.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:views="clr-namespace:CloudMusicPlayer.Views"
+    Title="Cloud Music Player"
+    Shell.FlyoutBehavior="Disabled">
+
+    <!-- Login (no tabs) -->
+    <ShellContent
+        Route="login"
+        ContentTemplate="{DataTemplate views:LoginPage}"
+        Shell.TabBarIsVisible="False" />
+
+    <!-- Main Tab Navigation -->
+    <TabBar Route="main">
+        <ShellContent
+            Title="Library"
+            Route="library"
+            Icon="library.png"
+            ContentTemplate="{DataTemplate views:LibraryPage}" />
+
+        <ShellContent
+            Title="Search"
+            Route="search"
+            Icon="search.png"
+            ContentTemplate="{DataTemplate views:SearchPage}" />
+
+        <ShellContent
+            Title="Playlists"
+            Route="playlists"
+            Icon="playlist.png"
+            ContentTemplate="{DataTemplate views:PlaylistsPage}" />
+
+        <ShellContent
+            Title="Settings"
+            Route="settings"
+            Icon="settings.png"
+            ContentTemplate="{DataTemplate views:SettingsPage}" />
+    </TabBar>
+
+</Shell>

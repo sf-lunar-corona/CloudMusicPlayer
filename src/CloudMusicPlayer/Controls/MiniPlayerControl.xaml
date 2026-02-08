@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="CloudMusicPlayer.Controls.MiniPlayerControl"
+             HeightRequest="65">
+
+    <Frame BackgroundColor="{AppThemeBinding Light=#FAFAFA, Dark=#1E1E2E}"
+           CornerRadius="0"
+           Padding="0"
+           HasShadow="True"
+           BorderColor="{AppThemeBinding Light=#E8E8E8, Dark=#333}">
+        <Grid ColumnDefinitions="50,*,Auto,Auto" Padding="10,5">
+            <!-- Album Art -->
+            <Frame Grid.Column="0" WidthRequest="45" HeightRequest="45"
+                   CornerRadius="5" Padding="0" IsClippedToBounds="True"
+                   BackgroundColor="{AppThemeBinding Light=#F0F0F0, Dark=#333}">
+                <Label Text="🎵" FontSize="20" HorizontalOptions="Center" VerticalOptions="Center" />
+            </Frame>
+
+            <!-- Track Info -->
+            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2" Padding="8,0,0,0">
+                <Label x:Name="TitleLabel"
+                       Text="Not Playing"
+                       FontSize="14"
+                       FontAttributes="Bold"
+                       LineBreakMode="TailTruncation" />
+                <Label x:Name="ArtistLabel"
+                       Text=""
+                       FontSize="11"
+                       TextColor="Gray"
+                       LineBreakMode="TailTruncation" />
+            </VerticalStackLayout>
+
+            <!-- Play/Pause -->
+            <Button Grid.Column="2"
+                    x:Name="PlayPauseButton"
+                    Text="▶"
+                    FontSize="20"
+                    WidthRequest="45"
+                    HeightRequest="45"
+                    CornerRadius="23"
+                    BackgroundColor="Transparent"
+                    TextColor="{AppThemeBinding Light=Black, Dark=White}"
+                    Clicked="OnPlayPauseClicked" />
+
+            <!-- Next -->
+            <Button Grid.Column="3"
+                    Text="⏭"
+                    FontSize="18"
+                    WidthRequest="40"
+                    HeightRequest="40"
+                    BackgroundColor="Transparent"
+                    TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}"
+                    Clicked="OnNextClicked" />
+
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnMiniPlayerTapped" />
+            </Grid.GestureRecognizers>
+        </Grid>
+    </Frame>
+</ContentView>
