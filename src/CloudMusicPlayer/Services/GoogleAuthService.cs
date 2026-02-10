@@ -15,6 +15,7 @@ public class GoogleAuthService : IGoogleAuthService
 {
     private UserCredential? _credential;
     private const string TokenKey = "google_auth_token";
+    private readonly SemaphoreSlim _credentialLock = new(1, 1);
 
     private static string ClientId =>
 #if ANDROID
@@ -193,24 +194,32 @@ public class GoogleAuthService : IGoogleAuthService
 
     public async Task<UserCredential?> GetCurrentCredentialAsync()
     {
-        if (_credential != null)
+        await _credentialLock.WaitAsync();
+        try
         {
-            if (_credential.Token.IsStale)
+            if (_credential != null)
             {
-                System.Diagnostics.Debug.WriteLine("[Auth] Token is stale, refreshing...");
-                var refreshed = await ManualRefreshTokenAsync();
-                if (!refreshed)
+                if (_credential.Token.IsStale)
                 {
-                    System.Diagnostics.Debug.WriteLine("[Auth] Token refresh failed");
-                    _credential = null;
-                    return null;
+                    System.Diagnostics.Debug.WriteLine("[Auth] Token is stale, refreshing...");
+                    var refreshed = await ManualRefreshTokenAsync();
+                    if (!refreshed)
+                    {
+                        System.Diagnostics.Debug.WriteLine("[Auth] Token refresh failed");
+                        _credential = null;
+                        return null;
+                    }
+                    System.Diagnostics.Debug.WriteLine("[Auth] Token refreshed successfully");
                 }
-                System.Diagnostics.Debug.WriteLine("[Auth] Token refreshed successfully");
+                return _credential;
             }
-            return _credential;
-        }
 
-        return await TryRestoreTokenAsync();
+            return await TryRestoreTokenAsync();
+        }
+        finally
+        {
+            _credentialLock.Release();
+        }
     }
 
     private async Task<bool> ManualRefreshTokenAsync()

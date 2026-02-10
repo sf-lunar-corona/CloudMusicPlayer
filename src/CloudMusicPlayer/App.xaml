@@ -21,6 +21,9 @@
             <converters:BoolToOpacityConverter x:Key="BoolToOpacityConverter" />
             <converters:ShuffleColorConverter x:Key="ShuffleColorConverter" />
             <converters:IsNotNullConverter x:Key="IsNotNullConverter" />
+            <converters:IsNullConverter x:Key="IsNullConverter" />
+            <converters:IntToBoolConverter x:Key="IntToBoolConverter" />
+            <converters:SyncButtonTextConverter x:Key="SyncButtonTextConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

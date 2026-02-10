@@ -226,4 +226,55 @@ public class DatabaseService : IDatabaseService
             "UPDATE AudioTrack SET IsFavorite = ? WHERE Id = ?",
             isFavorite, trackId);
     }
+
+    // Albums
+    public async Task<List<AlbumInfo>> GetAlbumsAsync(IEnumerable<string>? folderIds = null)
+    {
+        var db = await GetDatabaseAsync();
+        var allTracks = await db.Table<AudioTrack>().ToListAsync();
+
+        if (folderIds != null)
+        {
+            var idSet = new HashSet<string>(folderIds);
+            allTracks = allTracks.Where(t => idSet.Contains(t.FolderId)).ToList();
+        }
+
+        return allTracks
+            .GroupBy(t => (t.Artist, t.Album))
+            .Select(g => new AlbumInfo
+            {
+                Name = g.Key.Album,
+                Artist = g.Key.Artist,
+                TrackCount = g.Count(),
+                AlbumArtPath = g.FirstOrDefault(t => !string.IsNullOrEmpty(t.AlbumArtPath))?.AlbumArtPath
+            })
+            .OrderBy(a => a.Artist)
+            .ThenBy(a => a.Name)
+            .ToList();
+    }
+
+    public async Task<List<AudioTrack>> GetTracksByAlbumAsync(string artist, string albumName)
+    {
+        var db = await GetDatabaseAsync();
+        return await db.Table<AudioTrack>()
+            .Where(t => t.Artist == artist && t.Album == albumName)
+            .OrderBy(t => t.TrackNumber)
+            .ToListAsync();
+    }
+
+    public async Task<List<AudioTrack>> GetTracksWithDefaultMetadataAsync(IEnumerable<string>? folderIds = null)
+    {
+        var db = await GetDatabaseAsync();
+        var tracks = await db.Table<AudioTrack>()
+            .Where(t => t.Album == "Unknown Album" || t.Artist == "Unknown Artist")
+            .ToListAsync();
+
+        if (folderIds != null)
+        {
+            var idSet = new HashSet<string>(folderIds);
+            tracks = tracks.Where(t => idSet.Contains(t.FolderId)).ToList();
+        }
+
+        return tracks;
+    }
 }

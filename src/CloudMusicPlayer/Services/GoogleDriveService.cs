@@ -204,4 +204,66 @@ public class GoogleDriveService : IGoogleDriveService
             return "Unknown Folder";
         }
     }
+
+    public async Task<string?> DownloadPartialToTempAsync(string fileId, string fileExtension, long maxBytes = 512 * 1024)
+    {
+        for (int attempt = 0; attempt < 2; attempt++)
+        {
+            try
+            {
+                var credential = await _authService.GetCurrentCredentialAsync();
+                if (credential?.Token?.AccessToken == null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[Drive] Partial download {fileId}: no access token");
+                    return null;
+                }
+
+                using var httpClient = new HttpClient();
+                httpClient.DefaultRequestHeaders.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", credential.Token.AccessToken);
+
+                var url = $"https://www.googleapis.com/drive/v3/files/{fileId}?alt=media";
+                using var request = new HttpRequestMessage(HttpMethod.Get, url);
+                request.Headers.Range = new System.Net.Http.Headers.RangeHeaderValue(0, maxBytes - 1);
+
+                using var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+
+                // Retry on auth error with refreshed token
+                if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized && attempt == 0)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[Drive] Partial download {fileId}: 401, refreshing token...");
+                    InvalidateCachedService();
+                    var refreshed = await _authService.ForceRefreshTokenAsync();
+                    if (refreshed) continue;
+                    return null;
+                }
+
+                response.EnsureSuccessStatusCode();
+
+                var tempPath = Path.Combine(Path.GetTempPath(), $"cmp_meta_{fileId}{fileExtension}");
+                using (var fs = File.Create(tempPath))
+                {
+                    await response.Content.CopyToAsync(fs);
+                }
+
+                System.Diagnostics.Debug.WriteLine($"[Drive] Partial download {fileId}: {new FileInfo(tempPath).Length} bytes");
+                return tempPath;
+            }
+            catch (HttpRequestException ex) when (attempt == 0 && ex.Message.Contains("401"))
+            {
+                System.Diagnostics.Debug.WriteLine($"[Drive] Partial download {fileId}: auth exception, refreshing token...");
+                InvalidateCachedService();
+                var refreshed = await _authService.ForceRefreshTokenAsync();
+                if (!refreshed) return null;
+                continue;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Drive] Partial download failed for {fileId}: {ex.Message}");
+                return null;
+            }
+        }
+
+        return null;
+    }
 }

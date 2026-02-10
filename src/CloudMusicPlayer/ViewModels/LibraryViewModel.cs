@@ -12,20 +12,29 @@ public partial class LibraryViewModel : BaseViewModel
     private readonly IDatabaseService _databaseService;
     private readonly IAudioPlaybackService _playbackService;
     private readonly ICacheService _cacheService;
+    private readonly IGoogleDriveService _driveService;
+    private readonly IGoogleAuthService _authService;
 
     public ObservableCollection<SavedFolder> Folders { get; } = [];
 
     [ObservableProperty]
     private int _folderCount;
 
+    [ObservableProperty]
+    private bool _isSyncing;
+
     public LibraryViewModel(
         IDatabaseService databaseService,
         IAudioPlaybackService playbackService,
-        ICacheService cacheService)
+        ICacheService cacheService,
+        IGoogleDriveService driveService,
+        IGoogleAuthService authService)
     {
         _databaseService = databaseService;
         _playbackService = playbackService;
         _cacheService = cacheService;
+        _driveService = driveService;
+        _authService = authService;
         Title = "Library";
     }
 
@@ -35,6 +44,7 @@ public partial class LibraryViewModel : BaseViewModel
         await ExecuteAsync(async () =>
         {
             var savedFolders = GetSavedFolders();
+            System.Diagnostics.Debug.WriteLine($"[Library] LoadFolders: {savedFolders.Count} saved folders");
             Folders.Clear();
 
             foreach (var folder in savedFolders)
@@ -42,6 +52,7 @@ public partial class LibraryViewModel : BaseViewModel
                 // Get track count from DB
                 var tracks = await _databaseService.GetTracksByFolderAsync(folder.Id);
                 folder.TrackCount = tracks.Count;
+                System.Diagnostics.Debug.WriteLine($"[Library]   Folder \"{folder.Name}\" (ID={folder.Id}): {tracks.Count} tracks in DB");
                 Folders.Add(folder);
             }
 
@@ -58,8 +69,108 @@ public partial class LibraryViewModel : BaseViewModel
     }
 
     [RelayCommand]
+    private async Task SyncFoldersAsync()
+    {
+        if (IsSyncing) return;
+        IsSyncing = true;
+
+        try
+        {
+            var savedFolders = GetSavedFolders();
+            var totalAdded = 0;
+
+            foreach (var folder in savedFolders)
+            {
+                try
+                {
+                    System.Diagnostics.Debug.WriteLine($"[Library] Sync: scanning folder \"{folder.Name}\" (ID={folder.Id})...");
+                    var driveFiles = await _driveService.GetAudioFilesInFolderAsync(folder.Id, recursive: true);
+                    System.Diagnostics.Debug.WriteLine($"[Library] Sync: found {driveFiles.Count} audio files in \"{folder.Name}\"");
+
+                    var newInFolder = 0;
+                    foreach (var file in driveFiles)
+                    {
+                        var existing = await _databaseService.GetTrackByDriveIdAsync(file.Id);
+                        if (existing != null)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"[Library] Sync:   SKIP (exists) {file.Name} FolderId={existing.FolderId}");
+                            continue;
+                        }
+
+                        var track = new AudioTrack
+                        {
+                            DriveFileId = file.Id,
+                            Title = Path.GetFileNameWithoutExtension(file.Name),
+                            FileName = file.Name,
+                            FileExtension = Path.GetExtension(file.Name).ToLowerInvariant(),
+                            FileSize = file.Size ?? 0,
+                            MimeType = file.MimeType,
+                            FolderId = folder.Id,
+                            FolderName = folder.Name,
+                            DateAdded = DateTime.UtcNow
+                        };
+                        await _databaseService.SaveTrackAsync(track);
+                        totalAdded++;
+                        newInFolder++;
+                    }
+                    System.Diagnostics.Debug.WriteLine($"[Library] Sync: {newInFolder} new tracks saved for \"{folder.Name}\"");
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[Library] Sync FAILED for \"{folder.Name}\": {ex.GetType().Name}: {ex.Message}");
+                }
+            }
+
+            // Refresh folder track counts
+            foreach (var folder in Folders)
+            {
+                var tracks = await _databaseService.GetTracksByFolderAsync(folder.Id);
+                folder.TrackCount = tracks.Count;
+            }
+
+            // Force UI refresh
+            var currentFolders = Folders.ToList();
+            Folders.Clear();
+            foreach (var f in currentFolders)
+                Folders.Add(f);
+
+            if (totalAdded > 0)
+                await Shell.Current.DisplayAlert("Sync Complete", $"{totalAdded} new tracks found.", "OK");
+            else
+                await Shell.Current.DisplayAlert("Sync Complete", "No new tracks found.", "OK");
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlert("Sync Failed", ex.Message, "OK");
+        }
+        finally
+        {
+            IsSyncing = false;
+        }
+    }
+
+    [RelayCommand]
     private async Task BrowseDriveAsync()
     {
+        var isSignedIn = await _authService.IsSignedInAsync();
+        if (!isSignedIn)
+        {
+            var signIn = await Shell.Current.DisplayAlert(
+                "Sign In Required",
+                "You need to sign in to Google to browse Drive folders.",
+                "Sign In",
+                "Cancel");
+
+            if (!signIn) return;
+
+            var credential = await _authService.SignInAsync();
+            if (credential == null)
+            {
+                await Shell.Current.DisplayAlert("Sign In Failed", "Could not sign in to Google. Please try again.", "OK");
+                return;
+            }
+        }
+
         await Shell.Current.GoToAsync("folderbrowser?mode=browse");
     }
 

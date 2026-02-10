@@ -25,6 +25,63 @@
 
                 <BoxView HeightRequest="1" Color="{AppThemeBinding Light=#F0F0F0, Dark=#333}" Margin="15,0" />
 
+                <!-- Albums Section -->
+                <Label Text="Albums"
+                       FontSize="18"
+                       FontAttributes="Bold"
+                       Margin="15,15,15,5"
+                       IsVisible="{Binding HasAlbums}" />
+                <ScrollView Orientation="Horizontal"
+                            HorizontalScrollBarVisibility="Never"
+                            Margin="10,0"
+                            IsVisible="{Binding HasAlbums}">
+                    <HorizontalStackLayout BindableLayout.ItemsSource="{Binding Albums}" Spacing="0">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="models:AlbumInfo">
+                                <Border StrokeShape="RoundRectangle 10"
+                                        StrokeThickness="0"
+                                        BackgroundColor="{AppThemeBinding Light=#F8F8FF, Dark=#1A1A2E}"
+                                        Padding="8"
+                                        Margin="5"
+                                        WidthRequest="130">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:PlaylistsViewModel}}, Path=OpenAlbumCommand}"
+                                            CommandParameter="{Binding .}" />
+                                    </Border.GestureRecognizers>
+                                    <VerticalStackLayout Spacing="4" InputTransparent="True">
+                                        <Border WidthRequest="110" HeightRequest="110"
+                                                StrokeShape="RoundRectangle 8"
+                                                StrokeThickness="0"
+                                                BackgroundColor="{AppThemeBinding Light=#E8E8F0, Dark=#2A2A3E}"
+                                                HorizontalOptions="Center"
+                                                InputTransparent="True">
+                                            <Grid InputTransparent="True">
+                                                <Label Text="♪" FontSize="40"
+                                                       HorizontalOptions="Center" VerticalOptions="Center"
+                                                       TextColor="{AppThemeBinding Light=#AAA, Dark=#555}"
+                                                       IsVisible="{Binding AlbumArtPath, Converter={StaticResource IsNullConverter}}" />
+                                                <Image Source="{Binding AlbumArtPath}"
+                                                       Aspect="AspectFill"
+                                                       IsVisible="{Binding AlbumArtPath, Converter={StaticResource IsNotNullConverter}}" />
+                                            </Grid>
+                                        </Border>
+                                        <Label Text="{Binding Name}" FontSize="13" FontAttributes="Bold"
+                                               LineBreakMode="TailTruncation" MaxLines="1"
+                                               HorizontalTextAlignment="Center" />
+                                        <Label Text="{Binding Artist}" FontSize="11" TextColor="Gray"
+                                               LineBreakMode="TailTruncation" MaxLines="1"
+                                               HorizontalTextAlignment="Center" />
+                                    </VerticalStackLayout>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </HorizontalStackLayout>
+                </ScrollView>
+
+                <BoxView HeightRequest="1" Color="{AppThemeBinding Light=#F0F0F0, Dark=#333}" Margin="15,5,15,0"
+                         IsVisible="{Binding HasAlbums}" />
+
                 <!-- Playlists -->
                 <CollectionView ItemsSource="{Binding Playlists}"
                                  SelectionMode="None"

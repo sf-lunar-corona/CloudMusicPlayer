@@ -41,4 +41,9 @@ public interface IDatabaseService
     // Favorites
     Task<List<AudioTrack>> GetFavoriteTracksAsync();
     Task UpdateTrackFavoriteAsync(int trackId, bool isFavorite);
+
+    // Albums
+    Task<List<AlbumInfo>> GetAlbumsAsync(IEnumerable<string>? folderIds = null);
+    Task<List<AudioTrack>> GetTracksByAlbumAsync(string artist, string albumName);
+    Task<List<AudioTrack>> GetTracksWithDefaultMetadataAsync(IEnumerable<string>? folderIds = null);
 }

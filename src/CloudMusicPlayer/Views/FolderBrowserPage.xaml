@@ -35,6 +35,29 @@
         <ActivityIndicator Grid.Row="1" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"
                            Color="{StaticResource Primary}" Margin="0,10" />
 
+        <!-- Error Message -->
+        <Border Grid.Row="1"
+                BackgroundColor="#FFF3CD"
+                StrokeShape="RoundRectangle 8"
+                StrokeThickness="0"
+                Padding="12"
+                Margin="15,5"
+                IsVisible="{Binding ErrorMessage, Converter={StaticResource IsNotNullConverter}}">
+            <VerticalStackLayout Spacing="8">
+                <Label Text="{Binding ErrorMessage}"
+                       TextColor="#856404"
+                       FontSize="13" />
+                <Button Text="Retry"
+                        Command="{Binding LoadFolderCommand}"
+                        BackgroundColor="{StaticResource Primary}"
+                        TextColor="White"
+                        HeightRequest="36"
+                        CornerRadius="18"
+                        FontSize="13"
+                        HorizontalOptions="Start" />
+            </VerticalStackLayout>
+        </Border>
+
         <!-- File/Folder List -->
         <CollectionView Grid.Row="2"
                          ItemsSource="{Binding Items}"

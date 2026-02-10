@@ -13,5 +13,6 @@ public partial class AppShell : Shell
         Routing.RegisterRoute("nowplaying", typeof(NowPlayingPage));
         Routing.RegisterRoute("playlistdetail", typeof(PlaylistDetailPage));
         Routing.RegisterRoute("equalizer", typeof(EqualizerPage));
+        Routing.RegisterRoute("albumdetail", typeof(AlbumDetailPage));
     }
 }

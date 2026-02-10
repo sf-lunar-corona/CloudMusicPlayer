@@ -138,10 +138,15 @@ public partial class FolderBrowserViewModel : BaseViewModel, IQueryAttributable
         {
             IsBusy = true;
 
+            System.Diagnostics.Debug.WriteLine($"[FolderBrowser] SelectFolder: CurrentFolderId={CurrentFolderId}");
+
             // Get all audio files in the current folder recursively
             var audioFiles = await _driveService.GetAudioFilesInFolderAsync(CurrentFolderId, true);
             var folderName = await _driveService.GetFolderNameAsync(CurrentFolderId);
 
+            System.Diagnostics.Debug.WriteLine($"[FolderBrowser] SelectFolder: found {audioFiles.Count} audio files in \"{folderName}\"");
+
+            var savedCount = 0;
             foreach (var file in audioFiles)
             {
                 var existing = await _databaseService.GetTrackByDriveIdAsync(file.Id);
@@ -160,8 +165,11 @@ public partial class FolderBrowserViewModel : BaseViewModel, IQueryAttributable
                         DateAdded = DateTime.UtcNow
                     };
                     await _databaseService.SaveTrackAsync(track);
+                    savedCount++;
                 }
             }
+
+            System.Diagnostics.Debug.WriteLine($"[FolderBrowser] SelectFolder: saved {savedCount} new tracks with FolderId={CurrentFolderId}");
 
             // Save to library
             LibraryViewModel.AddSavedFolder(CurrentFolderId, folderName);

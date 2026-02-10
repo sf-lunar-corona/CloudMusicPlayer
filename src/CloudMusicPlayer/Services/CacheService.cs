@@ -7,12 +7,14 @@ public class CacheService : ICacheService
 {
     private readonly IGoogleDriveService _driveService;
     private readonly IDatabaseService _databaseService;
+    private readonly IMetadataService _metadataService;
     private readonly SemaphoreSlim _downloadLock = new(3); // Max 3 concurrent downloads
 
-    public CacheService(IGoogleDriveService driveService, IDatabaseService databaseService)
+    public CacheService(IGoogleDriveService driveService, IDatabaseService databaseService, IMetadataService metadataService)
     {
         _driveService = driveService;
         _databaseService = databaseService;
+        _metadataService = metadataService;
 
         if (!Directory.Exists(Constants.CacheDirectory))
             Directory.CreateDirectory(Constants.CacheDirectory);
@@ -82,6 +84,22 @@ public class CacheService : ICacheService
 
             // Update track with cached path
             track.CachedFilePath = localPath;
+
+            // Extract metadata if not yet populated
+            if (track.Artist == "Unknown Artist" || track.Album == "Unknown Album" || track.Duration == TimeSpan.Zero)
+            {
+                try
+                {
+                    await _metadataService.ExtractMetadataAsync(localPath, track);
+                    if (string.IsNullOrEmpty(track.AlbumArtPath))
+                        track.AlbumArtPath = await _metadataService.ExtractAlbumArtAsync(localPath, track.DriveFileId);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[Cache] Metadata extraction failed (non-fatal): {ex.Message}");
+                }
+            }
+
             await _databaseService.SaveTrackAsync(track);
 
             return localPath;

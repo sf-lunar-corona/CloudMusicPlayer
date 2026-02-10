@@ -10,4 +10,5 @@ public interface IGoogleDriveService
     Task DownloadFileToPathAsync(string fileId, string localPath, IProgress<long>? progress = null);
     Task<DriveFileItem?> GetFileInfoAsync(string fileId);
     Task<string> GetFolderNameAsync(string folderId);
+    Task<string?> DownloadPartialToTempAsync(string fileId, string fileExtension, long maxBytes = 512 * 1024);
 }

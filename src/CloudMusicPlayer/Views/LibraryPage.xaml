@@ -9,7 +9,7 @@
              Title="{Binding Title}">
 
     <Shell.TitleView>
-        <Grid ColumnDefinitions="*,Auto" Padding="0,0,10,0">
+        <Grid ColumnDefinitions="*,Auto,Auto" Padding="0,0,10,0">
             <Label Grid.Column="0"
                    Text="Library"
                    FontSize="20"
@@ -19,7 +19,19 @@
                    Text="{Binding FolderCount, StringFormat='{0} folders'}"
                    FontSize="13"
                    TextColor="Gray"
-                   VerticalOptions="Center" />
+                   VerticalOptions="Center"
+                   Margin="0,0,10,0" />
+            <Button Grid.Column="2"
+                    Text="{Binding IsSyncing, Converter={StaticResource SyncButtonTextConverter}}"
+                    Command="{Binding SyncFoldersCommand}"
+                    IsEnabled="{Binding IsSyncing, Converter={StaticResource InverseBoolConverter}}"
+                    FontSize="12"
+                    HeightRequest="32"
+                    Padding="10,0"
+                    CornerRadius="16"
+                    BackgroundColor="{StaticResource Primary}"
+                    TextColor="White"
+                    VerticalOptions="Center" />
         </Grid>
     </Shell.TitleView>
 

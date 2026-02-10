@@ -51,6 +51,7 @@ public static class MauiProgram
         builder.Services.AddTransient<SearchViewModel>();
         builder.Services.AddTransient<PlaylistsViewModel>();
         builder.Services.AddTransient<PlaylistDetailViewModel>();
+        builder.Services.AddTransient<AlbumDetailViewModel>();
         builder.Services.AddTransient<EqualizerViewModel>();
         builder.Services.AddTransient<SettingsViewModel>();
 
@@ -62,6 +63,7 @@ public static class MauiProgram
         builder.Services.AddTransient<SearchPage>();
         builder.Services.AddTransient<PlaylistsPage>();
         builder.Services.AddTransient<PlaylistDetailPage>();
+        builder.Services.AddTransient<AlbumDetailPage>();
         builder.Services.AddTransient<EqualizerPage>();
         builder.Services.AddTransient<SettingsPage>();
 

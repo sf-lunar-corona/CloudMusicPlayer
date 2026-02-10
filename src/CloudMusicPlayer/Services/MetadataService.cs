@@ -28,10 +28,12 @@ public class MetadataService : IMetadataService
 
                 track.TrackNumber = (int)file.Tag.Track;
                 track.Duration = file.Properties.Duration;
+
+                System.Diagnostics.Debug.WriteLine($"[Metadata] {Path.GetFileName(filePath)}: Title=\"{file.Tag.Title}\", Artist=\"{file.Tag.FirstPerformer}\", Album=\"{file.Tag.Album}\", TagTypes={file.TagTypes}");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Metadata extraction failed for {filePath}: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[Metadata] FAILED {Path.GetFileName(filePath)}: {ex.GetType().Name}: {ex.Message}");
                 if (string.IsNullOrEmpty(track.Title))
                     track.Title = Path.GetFileNameWithoutExtension(track.FileName);
             }

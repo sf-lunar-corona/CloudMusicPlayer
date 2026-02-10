@@ -371,7 +371,7 @@ public class AudioPlaybackService : IAudioPlaybackService
 
     private async Task ExtractMetadataInBackgroundAsync(AudioTrack track, string? cachedPath)
     {
-        if (track.Duration != TimeSpan.Zero) return;
+        if (track.Duration != TimeSpan.Zero && track.Artist != "Unknown Artist" && track.Album != "Unknown Album") return;
 
         try
         {
