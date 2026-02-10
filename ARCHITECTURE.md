@@ -6,6 +6,161 @@ Cloud Music Player is a cross-platform music player built with .NET MAUI that st
 
 **Target Framework:** .NET 9.0 (`net9.0-android`, `net9.0-ios`, `net9.0-windows10.0.19041.0`)
 
+## System Architecture Diagram
+
+```mermaid
+graph TB
+    subgraph UI["UI Layer (Views / XAML)"]
+        Login[LoginPage]
+        FolderBrowser[FolderBrowserPage]
+        Library[LibraryPage]
+        NowPlaying[NowPlayingPage]
+        Search[SearchPage]
+        Playlists[PlaylistsPage]
+        PlaylistDetail[PlaylistDetailPage]
+        Equalizer[EqualizerPage]
+        Settings[SettingsPage]
+        MiniPlayer[MiniPlayerControl]
+    end
+
+    subgraph VM["ViewModel Layer (CommunityToolkit.Mvvm)"]
+        LoginVM[LoginViewModel]
+        FolderBrowserVM[FolderBrowserViewModel]
+        LibraryVM[LibraryViewModel]
+        NowPlayingVM[NowPlayingViewModel]
+        SearchVM[SearchViewModel]
+        PlaylistsVM[PlaylistsViewModel]
+        PlaylistDetailVM[PlaylistDetailViewModel]
+        EqualizerVM[EqualizerViewModel]
+        SettingsVM[SettingsViewModel]
+    end
+
+    subgraph Services["Service Layer (Singletons via DI)"]
+        AuthSvc[GoogleAuthService]
+        DriveSvc[GoogleDriveService]
+        PlaybackSvc[AudioPlaybackService]
+        ProxySvc[StreamingProxyService]
+        CacheSvc[CacheService]
+        MetaSvc[MetadataService]
+        DbSvc[DatabaseService]
+        PlaylistSvc[PlaylistService]
+        FavSvc[FavoritesService]
+        SearchSvc[SearchService]
+        EqSvc[IEqualizerService]
+    end
+
+    subgraph Platform["Platform Layer"]
+        AndroidEq[AndroidEqualizerService]
+        iOSEq[iOSEqualizerService]
+        WinEq[WindowsEqualizerService]
+        WebAuth[WebAuthenticator / HttpListener]
+    end
+
+    subgraph External["External Systems"]
+        GoogleAPI[Google Drive API]
+        GoogleOAuth[Google OAuth2]
+    end
+
+    subgraph Storage["Local Storage"]
+        SQLite[(SQLite DB)]
+        FileCache[("File Cache (LRU)")]
+        SecStore[SecureStorage]
+        Prefs[Preferences]
+    end
+
+    subgraph Media["Media Playback"]
+        ME[MediaElement]
+    end
+
+    %% UI <-> ViewModel bindings
+    Login --- LoginVM
+    FolderBrowser --- FolderBrowserVM
+    Library --- LibraryVM
+    NowPlaying --- NowPlayingVM
+    Search --- SearchVM
+    Playlists --- PlaylistsVM
+    PlaylistDetail --- PlaylistDetailVM
+    Equalizer --- EqualizerVM
+    Settings --- SettingsVM
+    MiniPlayer --- NowPlayingVM
+
+    %% ViewModel -> Service calls
+    LoginVM --> AuthSvc
+    FolderBrowserVM --> DriveSvc
+    FolderBrowserVM --> DbSvc
+    LibraryVM --> DbSvc
+    LibraryVM --> PlaybackSvc
+    LibraryVM --> DriveSvc
+    NowPlayingVM --> PlaybackSvc
+    NowPlayingVM --> FavSvc
+    SearchVM --> SearchSvc
+    PlaylistsVM --> PlaylistSvc
+    PlaylistDetailVM --> PlaylistSvc
+    PlaylistDetailVM --> PlaybackSvc
+    EqualizerVM --> EqSvc
+    SettingsVM --> CacheSvc
+    SettingsVM --> AuthSvc
+
+    %% Service interdependencies
+    PlaybackSvc --> CacheSvc
+    PlaybackSvc --> ProxySvc
+    PlaybackSvc --> MetaSvc
+    PlaybackSvc --> ME
+    ProxySvc --> DriveSvc
+    ProxySvc --> CacheSvc
+    DriveSvc --> AuthSvc
+    CacheSvc --> DbSvc
+    PlaylistSvc --> DbSvc
+    FavSvc --> DbSvc
+    SearchSvc --> DbSvc
+    MetaSvc --> DbSvc
+
+    %% Platform implementations
+    EqSvc -.- AndroidEq
+    EqSvc -.- iOSEq
+    EqSvc -.- WinEq
+    AuthSvc --> WebAuth
+
+    %% External connections
+    AuthSvc --> GoogleOAuth
+    DriveSvc --> GoogleAPI
+    AuthSvc --> SecStore
+
+    %% Storage connections
+    DbSvc --> SQLite
+    CacheSvc --> FileCache
+    SettingsVM --> Prefs
+```
+
+### Layer Overview
+
+| Layer | Responsibility |
+|-------|---------------|
+| **UI** | XAML pages and controls. Data binding only, no business logic. |
+| **ViewModel** | Presentation logic, commands, and state. Extends `BaseViewModel`. |
+| **Service** | Business logic and I/O. Registered as singletons in DI container. |
+| **Platform** | Platform-specific implementations (equalizer, OAuth redirect). |
+| **External** | Google Drive API and OAuth2 endpoints. |
+| **Storage** | SQLite database, LRU file cache, SecureStorage, Preferences. |
+
+### Audio Playback Pipeline
+
+```mermaid
+flowchart LR
+    User([User taps track]) --> PB[AudioPlaybackService]
+    PB --> Check{Cached?}
+    Check -->|Yes| File["file:// URI"]
+    Check -->|No| Proxy[StreamingProxyService]
+    Proxy --> Drive[Google Drive API]
+    Proxy --> Stream["http://localhost URI"]
+    Proxy -.->|async write| Cache[("LRU Cache")]
+    File --> ME[MediaElement]
+    Stream --> ME
+    ME --> Audio([Audio Output])
+    PB -.->|background| Meta[MetadataService]
+    PB -.->|background| PreCache[Pre-cache next track]
+```
+
 ## Project Structure
 
 ```
