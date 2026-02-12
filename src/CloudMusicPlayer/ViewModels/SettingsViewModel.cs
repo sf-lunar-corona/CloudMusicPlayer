@@ -8,7 +8,6 @@ public partial class SettingsViewModel : BaseViewModel
 {
     private readonly IGoogleAuthService _authService;
     private readonly ICacheService _cacheService;
-    private readonly IDatabaseService _databaseService;
 
     [ObservableProperty]
     private string _userEmail = string.Empty;
@@ -26,26 +25,17 @@ public partial class SettingsViewModel : BaseViewModel
     private string _cacheSizeLimitText = "2 GB";
 
     [ObservableProperty]
-    private string _selectedFolders = "None";
-
-    [ObservableProperty]
-    private bool _isDarkTheme;
-
-    [ObservableProperty]
     private string _appVersion = "1.0.0";
 
     public SettingsViewModel(
         IGoogleAuthService authService,
-        ICacheService cacheService,
-        IDatabaseService databaseService)
+        ICacheService cacheService)
     {
         _authService = authService;
         _cacheService = cacheService;
-        _databaseService = databaseService;
         Title = "Settings";
 
         CacheSizeLimit = Preferences.Get("cache_size_limit", Constants.DefaultCacheSizeLimitBytes);
-        IsDarkTheme = Preferences.Get("dark_theme", false);
     }
 
     [RelayCommand]
@@ -59,8 +49,6 @@ public partial class SettingsViewModel : BaseViewModel
             var cacheSize = await _cacheService.GetCacheSizeAsync();
             CacheSizeText = FormatSize(cacheSize);
 
-            var folders = Preferences.Get("selected_folders", "");
-            SelectedFolders = string.IsNullOrEmpty(folders) ? "None" : $"{folders.Split('|').Length} folder(s)";
         }, "Failed to load settings");
     }
 
@@ -104,18 +92,6 @@ public partial class SettingsViewModel : BaseViewModel
     }
 
     [RelayCommand]
-    private void ToggleTheme()
-    {
-        IsDarkTheme = !IsDarkTheme;
-        Preferences.Set("dark_theme", IsDarkTheme);
-
-        if (Application.Current != null)
-        {
-            Application.Current.UserAppTheme = IsDarkTheme ? AppTheme.Dark : AppTheme.Light;
-        }
-    }
-
-    [RelayCommand]
     private async Task SignOutAsync()
     {
         var confirm = await Shell.Current.DisplayAlert(
@@ -129,12 +105,6 @@ public partial class SettingsViewModel : BaseViewModel
             await _authService.SignOutAsync();
             await Shell.Current.GoToAsync("//login");
         }
-    }
-
-    [RelayCommand]
-    private async Task ManageFoldersAsync()
-    {
-        await Shell.Current.GoToAsync("folderbrowser");
     }
 
     private static string FormatSize(long bytes)

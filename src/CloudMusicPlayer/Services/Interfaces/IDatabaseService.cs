@@ -35,9 +35,6 @@ public interface IDatabaseService
     Task<int> DeleteCachedFileAsync(string driveFileId);
     Task ClearCachedFilesAsync();
 
-    // Search
-    Task<List<AudioTrack>> SearchTracksAsync(string query);
-
     // Favorites
     Task<List<AudioTrack>> GetFavoriteTracksAsync();
     Task UpdateTrackFavoriteAsync(int trackId, bool isFavorite);

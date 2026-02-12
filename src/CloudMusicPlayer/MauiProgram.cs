@@ -32,7 +32,6 @@ public static class MauiProgram
         builder.Services.AddSingleton<IAudioPlaybackService, AudioPlaybackService>();
         builder.Services.AddSingleton<IPlaylistService, PlaylistService>();
         builder.Services.AddSingleton<IFavoritesService, FavoritesService>();
-        builder.Services.AddSingleton<ISearchService, SearchService>();
 
         // Platform-specific Equalizer
 #if ANDROID
@@ -48,7 +47,6 @@ public static class MauiProgram
         builder.Services.AddTransient<FolderBrowserViewModel>();
         builder.Services.AddTransient<LibraryViewModel>();
         builder.Services.AddTransient<NowPlayingViewModel>();
-        builder.Services.AddTransient<SearchViewModel>();
         builder.Services.AddTransient<PlaylistsViewModel>();
         builder.Services.AddTransient<PlaylistDetailViewModel>();
         builder.Services.AddTransient<AlbumDetailViewModel>();
@@ -60,7 +58,6 @@ public static class MauiProgram
         builder.Services.AddTransient<FolderBrowserPage>();
         builder.Services.AddTransient<LibraryPage>();
         builder.Services.AddTransient<NowPlayingPage>();
-        builder.Services.AddTransient<SearchPage>();
         builder.Services.AddTransient<PlaylistsPage>();
         builder.Services.AddTransient<PlaylistDetailPage>();
         builder.Services.AddTransient<AlbumDetailPage>();

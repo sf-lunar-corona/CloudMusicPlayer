@@ -52,36 +52,6 @@
                 </VerticalStackLayout>
             </Frame>
 
-            <!-- Music Library Section -->
-            <Label Text="Music Library" FontSize="13" FontAttributes="Bold" TextColor="Gray" Margin="15,20,15,5"
-                   CharacterSpacing="1" />
-            <Frame BackgroundColor="{AppThemeBinding Light=White, Dark=#222}" CornerRadius="10" Margin="15,5" Padding="15">
-                <VerticalStackLayout Spacing="15">
-                    <Grid ColumnDefinitions="*,Auto">
-                        <Label Grid.Column="0" Text="Selected Folders" FontSize="15" VerticalOptions="Center" />
-                        <Label Grid.Column="1" Text="{Binding SelectedFolders}" FontSize="15" TextColor="Gray" />
-                    </Grid>
-                    <Button Text="Manage Folders"
-                            Command="{Binding ManageFoldersCommand}"
-                            BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#333}"
-                            TextColor="{AppThemeBinding Light=Black, Dark=White}"
-                            CornerRadius="10"
-                            HeightRequest="40" />
-                </VerticalStackLayout>
-            </Frame>
-
-            <!-- Appearance Section -->
-            <Label Text="Appearance" FontSize="13" FontAttributes="Bold" TextColor="Gray" Margin="15,20,15,5"
-                   CharacterSpacing="1" />
-            <Frame BackgroundColor="{AppThemeBinding Light=White, Dark=#222}" CornerRadius="10" Margin="15,5" Padding="15">
-                <Grid ColumnDefinitions="*,Auto">
-                    <Label Grid.Column="0" Text="Dark Mode" FontSize="15" VerticalOptions="Center" />
-                    <Switch Grid.Column="1"
-                            IsToggled="{Binding IsDarkTheme}"
-                            OnColor="{StaticResource Primary}" />
-                </Grid>
-            </Frame>
-
             <!-- About Section -->
             <Label Text="About" FontSize="13" FontAttributes="Bold" TextColor="Gray" Margin="15,20,15,5"
                    CharacterSpacing="1" />

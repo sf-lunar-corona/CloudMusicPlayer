@@ -22,12 +22,6 @@
             ContentTemplate="{DataTemplate views:LibraryPage}" />
 
         <ShellContent
-            Title="Search"
-            Route="search"
-            Icon="search.png"
-            ContentTemplate="{DataTemplate views:SearchPage}" />
-
-        <ShellContent
             Title="Playlists"
             Route="playlists"
             Icon="playlist.png"

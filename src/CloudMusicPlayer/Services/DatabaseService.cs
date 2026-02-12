@@ -199,16 +199,6 @@ public class DatabaseService : IDatabaseService
         await db.DeleteAllAsync<CachedFile>();
     }
 
-    // Search
-    public async Task<List<AudioTrack>> SearchTracksAsync(string query)
-    {
-        var db = await GetDatabaseAsync();
-        var lowerQuery = $"%{query.ToLowerInvariant()}%";
-        return await db.QueryAsync<AudioTrack>(
-            "SELECT * FROM AudioTrack WHERE LOWER(Title) LIKE ? OR LOWER(Artist) LIKE ? OR LOWER(Album) LIKE ? ORDER BY Title",
-            lowerQuery, lowerQuery, lowerQuery);
-    }
-
     // Favorites
     public async Task<List<AudioTrack>> GetFavoriteTracksAsync()
     {
